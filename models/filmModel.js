@@ -3,11 +3,21 @@ let mongoose = require('mongoose'),
 
 let filmModel = new Schema({
     title: {
-        type: String
+        type: String,
+        required: true
     },
-    regisseur: {type: String},
-    genre: {type: String},
-    seen: {type: Boolean, default: false}
+    regisseur: {
+        type: String,
+        required: true
+    },
+    genre: {
+        type: String,
+        required: true
+    },
+    seen: {
+        type: Boolean, 
+        default: false,
+        required: true}
 
 });
 

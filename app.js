@@ -24,12 +24,4 @@ app.listen(port, function(){
     console.log('We are running on Port: ' + port);
 })
 
-function currentItems(total, start, limit){
-    Film.find(query, function(err, film){
-        if(err)
-            res.status(500).send(err);
-        else
-            res.json(film)
-        
-    })
-}
+

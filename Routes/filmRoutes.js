@@ -4,10 +4,12 @@ let routes = function(Film){
     let filmRouter = express.Router();
 
     let filmController = require('../Controllers/filmController.js')(Film);
+    //let paginationController = require('../Controllers/paginationController.js')(Film);
 
     filmRouter.route('/films')
     .post(filmController.post)
-    .get(filmController.get);
+    .get(filmController.get)
+    //.get(paginationController.currentItems)
 
 filmRouter.use('/films/:filmId', function(req, res, next){
     Film.findById(req.params.filmId, function(err, film){
@@ -24,11 +26,18 @@ filmRouter.use('/films/:filmId', function(req, res, next){
     })
 })
 
+
+
 filmRouter.route('/films/:filmId')
     .get(function(req, res){
 
-        res.json(req.film);
-            
+        let returnFilm = req.film.toJSON();
+
+        returnFilm.links = {};
+        let newLink = 'http://' + req.headers.host + '/api/films/?genre=' + returnFilm.genre;
+        returnFilm.links.collection = 'http://' + req.headers.host + '/api/films/';
+        returnFilm.links.FilterByThisGenre = newLink.replace(' ', '%20');
+        res.json(returnFilm);
         
     })
 
@@ -39,6 +48,8 @@ filmRouter.route('/films/:filmId')
     .delete(filmController.delete)
 
     return filmRouter;
+
+
 
 };
 

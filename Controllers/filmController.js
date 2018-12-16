@@ -15,13 +15,33 @@ let filmController = function(Film){
             query.genre = req.query.genre;
         }
 
-        Film.find(query, function(err, film){
+        Film.find(query, function(err, films){
             if(err)
                 res.status(500).send(err);
-            else
-                res.json(film)
+            else{
+                //create array to push te json films in
+                
+                let returnFilms = [];
+                films.forEach(function(element){
+                    //strips all the mongoose out of de film models
+                    let newFilm = element.toJSON();
+                    newFilm.links = {};
+                    newFilm.links.self = 'http://' + req.headers.host + '/api/films/' + newFilm._id;
+                    newFilm.links.collection = 'http://' + req.headers.host + '/api/films/';
+                    returnFilms.push(newFilm);
+                })
+                //results of query in res
+                res.json(returnFilms); 
+                
+                let total = returnFilms.length
+                let start = 1
+                let limit = 10
+               
 
-        })
+            }
+                
+
+            })
     }
 
     let put = function(req, res){
@@ -72,6 +92,14 @@ let filmController = function(Film){
             }
         });
     }
+
+    
+
+    function currentItems(total, start, limit){
+        console.log(total);
+    }
+
+    
 
     return {
         post: post,

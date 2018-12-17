@@ -32,11 +32,6 @@ let filmController = function(Film){
                 })
                 //results of query in res
                 res.json(returnFilms); 
-                
-                let total = returnFilms.length
-                let start = 1
-                let limit = 10
-               
 
             }
                 

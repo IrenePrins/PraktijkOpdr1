@@ -1,0 +1,4 @@
+{
+    "uri": "http://145.24.222.85:8080/api/films/",
+    "uitleg": "Het is een persoonlijke filmApi. Je kan nieuwe films toevoegen die je graag wilt zien. Je kan de specificaties aangeven, bijvoorbeeld de titel, diegene de het geregisseerd heeft en genre van een film krijgen. Ook kan je zelf aangeven of je de film al gezien heb. Je kan dingen aanpassen in met put en je kan terug linken van de collectie naar de detailresource."
+}

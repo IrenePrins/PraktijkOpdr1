@@ -1,60 +1,119 @@
 let filmController = function(Film){
 
     let post = function(req, res){
-        let film = new Film(req.body);
 
-        film.save();
-        res.status(201).send(film);
+        // let contype = req.headers['content-type'];
+        // let film = new Film(req.body);
+        // if (!contype || contype.indexOf('application/json') !== 0)
+        //     return res.status(400).send("Unsupported Format");
+        // else
+        //     film.save();
+        //     res.status(201).send(film);
+        if(!req.body.title || !req.body.genre || !req.body.regisseur){
+            res.status(400).send('Title, genre and regisseur need to be filled in')
+        }else{
+            let film = new Film(req.body);
+            film.save();
+            res.status(201).send(film);
+        }
+        
 
     }
 
     let get = function(req, res){
-        let query = {};
-
-        if(req.query.genre){
-            query.genre = req.query.genre;
-        }
-
-        Film.find(query, function(err, films){
-            if(err)
-                res.status(500).send(err);
-            else{
-                //create array to push te json films in
-                
-                let returnFilms = [];
-                films.forEach(function(element){
-                    //strips all the mongoose out of de film models
-                    let newFilm = element.toJSON();
-                    newFilm.links = {};
-                    newFilm.links.self = 'http://' + req.headers.host + '/api/films/' + newFilm._id;
-                    newFilm.links.collection = 'http://' + req.headers.host + '/api/films/';
-                    returnFilms.push(newFilm);
-                })
-                //results of query in res
-                res.json(returnFilms); 
-
+        Film.find()
+        .exec()
+        .then(films => {
+        const response = {
+          items: films.map(film => {
+            return {
+              title: film.title,
+              regisseur: film.regisseur,
+              genre: film.genre,
+              _id: film._id,
+              _links: {
+                self: {
+                    href: `http://${req.headers.host}/api/films/` + film._id
+                },
+                collection:{
+                    href: `http://${req.headers.host}/api/films`
+                }               
+              }
+            };
+          }),
+          _links: {
+            self: {
+                href: `http://${req.headers.host}/api/films`
             }
-                
-
-            })
+          },
+          pagination: {
+            bloat: "Bloat Bloat Bloat Bloat"
+          }
+        };
+          if (films.length >= 0) {
+        res.status(200).json(response);
+          } else {
+              res.status(404).json({
+                  message: 'No entries found'
+              });
+          }
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          error: err
+        });
+      });
+        // Film.find(function(err, films){
+        //     const results ={
+        //         items: films.map(film =>{
+        //             return{
+        //                 _id : film._id,
+        //                 title : film.title,
+        //                 regisseur : film.regisseur,
+        //                 genre : film.genre,
+        //                 _links: {
+        //                     self: {
+        //                         href: `http://{req.headers.host}/api/films` + film._id
+        //                     },
+        //                     collection: {
+        //                         href: `http://{req.headers.host}/api/films`
+        //                     }
+        //                 }
+        //             }
+        //         }),
+        //         _links: {
+        //             self: {
+        //                 href: `http://{req.headers.host}/api/films`
+        //             }
+        //         },
+        //         pagination: {
+        //             hoi : 'Hoi Hoi Hoi'
+        //         }
+        //     }
+        //     res.status(200).json(results)
+        // }
+        // )
     }
 
     let put = function(req, res){
         Film.findById(req.params.filmId, function(err, film){
-            if(err)
-                res.status(500).send(err);
-            else
-                req.film.title = req.body.title;
-                req.film.regisseur = req.body.regisseur;
-                req.film.genre = req.body.genre;
-                req.film.seen = req.body.seen;
+            if(!req.body.title || !req.body.genre || !req.body.regisseur){
+                 res.status(400).send('all fields need to be filled in');   
+            } 
+            else{
+                film.title = req.body.title;
+                film.regisseur = req.body.regisseur;
+                film.genre = req.body.genre;
                 film.save(function(err){
-                    if(err)
-                        res.status(500).send(err);
-                    else{
-                        res.json(req.film)
-                    }});
-                res.json(req.film);    
+                    if(err){
+                        res.status(500)
+                    }else{
+                        res.json(film); 
+                    }
+                })
+               
+            }
             
         })
     }
@@ -78,21 +137,42 @@ let filmController = function(Film){
         
     }
 
+    // let remove = function(req, res){
+    //     req.film.remove(function(err){
+    //         if(err){
+    //             res.status(500).send(err);
+    //         } else{
+    //             res.status(204).send('Removed');
+    //         }
+    //     });
+    // }
+
     let remove = function(req, res){
-        req.film.remove(function(err){
-            if(err){
-                res.status(500).send(err);
-            } else{
-                res.status(204).send('Removed');
-            }
-        });
+        Film.findByIdAndDelete({_id: req.params.filmId})
+            .then(film => {
+                res.status(204)
+                res.json(film)
+            }).catch(err =>{
+                res.status(500).json(err)
+            })
     }
 
-    
-
-    function currentItems(total, start, limit){
-        console.log(total);
+    let options = function(req, res){
+        res.header('Allow', 'GET, POST, OPTIONS')
+        res.set('Accept', 'application/json')
+        res.send(200)
     }
+
+    let optionsDetail = function(req, res){
+        res.header('Allow', 'GET, PUT, PATCH, DELETE, OPTIONS')
+        res.send(200);
+    }
+
+   
+
+    // function currentItems(total, start, limit){
+    //     console.log(total);
+    // }
 
     
 
@@ -101,7 +181,9 @@ let filmController = function(Film){
         get: get,
         put: put,
         patch: patch,
-        delete: remove
+        delete: remove,
+        options: options,
+        optionsDetail: optionsDetail
     }
 }
 

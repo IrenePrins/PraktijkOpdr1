@@ -6,9 +6,13 @@ let routes = function(Film){
     let filmController = require('../Controllers/filmController.js')(Film);
     //let paginationController = require('../Controllers/paginationController.js')(Film);
 
-    filmRouter.route('/films')
+    filmRouter.route('/')
+    .options(filmController.options)
     .post(filmController.post)
     .get(filmController.get)
+    
+
+
     //.get(paginationController.currentItems)
 
 filmRouter.use('/films/:filmId', function(req, res, next){
@@ -21,24 +25,35 @@ filmRouter.use('/films/:filmId', function(req, res, next){
         }
         else{
             res.status(404).send('no films found');
-        }
-        
-    })
+        }        
+    });
+    
 })
 
-
-
-filmRouter.route('/films/:filmId')
+filmRouter.route('/:filmId')
     .get(function(req, res){
-
-        let returnFilm = req.film.toJSON();
-
-        returnFilm.links = {};
-        let newLink = 'http://' + req.headers.host + '/api/films/?genre=' + returnFilm.genre;
-        returnFilm.links.collection = 'http://' + req.headers.host + '/api/films/';
-        returnFilm.links.FilterByThisGenre = newLink.replace(' ', '%20');
-        res.json(returnFilm);
-        
+        id = req.params.filmId;
+        Film.findById(id)
+            .exec()
+            .then(film =>{
+                if(film) {
+                    film = film.toJSON()
+                    film._links = {
+                        self: {
+                            href: `http://${req.headers.host}/api/films/` + film._id
+                        },
+                        collection:{
+                            href: `http://${req.headers.host}/api/films`
+                        }
+                    }
+                    res.status(200).json(film)
+                } else{
+                    res.status(404).json({ message: "Geen id gevonden" })
+                }
+            })
+            .catch(err => {
+                res.status(500).json({ error: err})
+            })
     })
 
     .put(filmController.put)
@@ -46,10 +61,9 @@ filmRouter.route('/films/:filmId')
     .patch(filmController.patch)
     
     .delete(filmController.delete)
+    .options(filmController.optionsDetail)
 
     return filmRouter;
-
-
 
 };
 

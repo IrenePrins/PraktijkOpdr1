@@ -13,11 +13,7 @@ let filmModel = new Schema({
     genre: {
         type: String,
         required: true
-    },
-    seen: {
-        type: Boolean, 
-        default: false,
-        required: true}
+    }
 
 });
 
